@@ -3,7 +3,7 @@
 
 
 ## Network Architecture
-![image-20210228153142126](./FSI-Net/images/FSI-Net_V1.png)
+![image-20210228153142126](./FSI-Net/images/FSI-Net.png)
 
 ## Quantitative & Qualitative Results on LEVIR-CD, DSIFN-CD, WHU-CD and CDD 
 ![image-20210228153142126](./FSI-Net/images/LEVIR-CD&DSIFN-CD.png)
@@ -211,7 +211,7 @@ Code is released for non-commercial and research purposes **only**. For commerci
 
 If you use this code for your research, please cite our paper:
 
-
+""
 
 ## Disclaimer
 Appreciate the work from the following repositories:
