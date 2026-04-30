@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from functools import partial
-from models.ChangeFormerBaseNetworks import *
+from models.BaseNetworks import *
 from models.help_funcs import TwoLayerConv2d, save_to_mat
 import torch.nn.functional as F
 import timm

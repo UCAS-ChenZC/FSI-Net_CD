@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional
 import torch.nn.functional as F
 from functools import partial
-from models.ChangeFormerBaseNetworks import *
+from models.BaseNetworks import *
 import torch.nn.functional as F
 from mmengine.model.weight_init import normal_init
 from models.pixel_shuffel_up import PS_UP
@@ -14,6 +14,7 @@ import warnings
 # from mmcv.runner import load_checkpoint
 from mmengine.runner import load_checkpoint as mmengine_load_checkpoint
 from models.newFreqFusion import FreqFusion
+from models.LIFT_IFF import FreqWaveletFusion
 import torch.fft
 import warnings
 from models.FFSwin import dct_channel_block
@@ -102,7 +103,7 @@ class BiDirectionalCrossAttention(nn.Module):
 
 
 
-
+#可迁移至第二篇
 class MutualCrossAttention(nn.Module):
     def __init__(self, dropout):
         super(MutualCrossAttention, self).__init__()
@@ -213,126 +214,6 @@ class DiffAttentionModule(nn.Module):
         x = x.permute(0, 3, 1, 2)
         return x
     
-# class Class_Token_Seg3(nn.Module):
-#     # with slight modifications to do CA
-#     def __init__(self, dim, num_heads=8, num_classes=150, qkv_bias=True, qk_scale=None):
-#         super().__init__()
-#         self.num_heads = num_heads
-#         self.num_classes = num_classes
-#         head_dim = dim // num_heads
-#         self.scale = qk_scale or head_dim ** -0.5
-
-#         self.q = nn.Linear(dim, dim, bias=qkv_bias)
-#         self.k = nn.Linear(dim, dim, bias=qkv_bias)
-
-#         self.cls_token = nn.Parameter(torch.zeros(1, num_classes, dim))
-#         self.prop_token = nn.Parameter(torch.zeros(1, num_classes, dim))
-
-#         trunc_normal_(self.cls_token, std=.02)
-#         trunc_normal_(self.prop_token, std=.02)
-
-#     def forward(self, x):  # , x1):
-#         b, c, h, w = x.size()
-#         x = x.flatten(2).transpose(1, 2)
-#         B, N, C = x.shape
-#         cls_tokens = self.cls_token.expand(B, -1, -1)
-#         prop_tokens = self.prop_token.expand(B, -1, -1)
-
-#         x = torch.cat((cls_tokens, x), dim=1)
-#         B, N, C = x.shape
-#         q = self.q(x).reshape(B, N, self.num_heads, C // self.num_heads).permute(0, 2, 1, 3)
-#         k = self.k(x[:, 0:self.num_classes]).unsqueeze(1).reshape(B, self.num_classes, self.num_heads,
-#                                                                   C // self.num_heads).permute(0, 2, 1, 3)
-
-#         k = k * self.scale
-#         attn = (k @ q.transpose(-2, -1)).squeeze(1).transpose(-2, -1)
-#         attn = attn[:, self.num_classes:]
-#         x_cls = attn.permute(0, 2, 1).reshape(b, -1, h, w)
-#         return x_cls, prop_tokens
-# class TransformerClassToken3(nn.Module):
-
-#     def __init__(self, dim, num_heads=2, num_classes=150, depth=1, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0.,
-#                  attn_drop=0.,
-#                  drop_path=0., act_cfg=None, norm_cfg=None, sr_ratio=1, trans_with_mlp=True, att_type="SelfAttention"):
-#         super().__init__()
-#         self.trans_with_mlp = trans_with_mlp
-#         self.depth = depth
-#         print("TransformerOriginal initial num_heads:{}; depth:{}, self.trans_with_mlp:{}".format(num_heads, depth,
-#                                                                                                   self.trans_with_mlp))
-#         self.num_classes = num_classes
-
-#         self.attn = SelfAttentionBlock(
-#             key_in_channels=dim,
-#             query_in_channels=dim,
-#             channels=dim,
-#             out_channels=dim,
-#             share_key_query=False,
-#             query_downsample=None,
-#             key_downsample=None,
-#             key_query_num_convs=1,
-#             value_out_num_convs=1,
-#             key_query_norm=True,
-#             value_out_norm=True,
-#             matmul_norm=True,
-#             with_out=True,
-#             conv_cfg=None,
-#             norm_cfg=norm_cfg,
-#             act_cfg=act_cfg)
-
-#         self.cross_attn = SelfAttentionBlock(
-#             key_in_channels=dim,
-#             query_in_channels=dim,
-#             channels=dim,
-#             out_channels=dim,
-#             share_key_query=False,
-#             query_downsample=None,
-#             key_downsample=None,
-#             key_query_num_convs=1,
-#             value_out_num_convs=1,
-#             key_query_norm=True,
-#             value_out_norm=True,
-#             matmul_norm=True,
-#             with_out=True,
-#             conv_cfg=None,
-#             norm_cfg=norm_cfg,
-#             act_cfg=act_cfg)
-
-#         # self.conv = nn.Conv2d(dim*3, dim, kernel_size=3, stride=1, padding=1)
-#         # self.conv2 = nn.Conv2d(dim*2,dim, kernel_size=3, stride=1, padding=1)
-#         self.apply(self._init_weights)
-
-#     def _init_weights(self, m):
-#         if isinstance(m, nn.Linear):
-#             trunc_normal_(m.weight, std=.02)
-#             if isinstance(m, nn.Linear) and m.bias is not None:
-#                 nn.init.constant_(m.bias, 0)
-#         elif isinstance(m, nn.LayerNorm):
-#             nn.init.constant_(m.bias, 0)
-#             nn.init.constant_(m.weight, 1.0)
-#         elif isinstance(m, nn.Conv2d):
-#             fan_out = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-#             fan_out //= m.groups
-#             m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
-#             if m.bias is not None:
-#                 m.bias.data.zero_()
-
-#     def forward(self, x, cls_tokens, out_cls_mid):
-#         b, c, h, w = x.size()
-#         out_cls_mid = out_cls_mid.flatten(2).transpose(1, 2)
-
-#         # within images attention
-#         x1 = self.attn(x, x)
-
-#         # cross images attention
-#         out_cls_mid = out_cls_mid.softmax(dim=-1)
-#         cls = out_cls_mid @ cls_tokens  # bxnxc
-
-#         cls = cls.permute(0, 2, 1).reshape(b, c, h, w)
-#         x2 = self.cross_attn(x, cls)
-
-#         x = x + x1 + x2
-
-#         return x
 class SegFusion(nn.Module):
     """
     Transformer Decoder
@@ -413,33 +294,16 @@ class SegFusion(nn.Module):
         self.ff2 = FreqFusion(256,512)
         self.ff3 = FreqFusion(256,768)
         self.ff4 = FreqFusion(256,1024)
-        # self.EFCAtten = dct_channel_block(2)
-        # self.SAM4 = SAM(input_dim=256, embed_dim=256, v_dim=256, window_size=7, num_heads=4, patch_size=4, in_chans=3)
-        # self.SAM3 = SAM(input_dim=256, embed_dim=256, v_dim=256, window_size=7, num_heads=4, patch_size=4, in_chans=3)
-        # self.SAM2 = SAM(input_dim=256, embed_dim=256, v_dim=256, window_size=7, num_heads=4, patch_size=4, in_chans=3)
-        # self.SAM1 = SAM(input_dim=256, embed_dim=256, v_dim=256, window_size=7, num_heads=4, patch_size=4, in_chans=3)
-        # self.SAM0 = SAM(input_dim=256, embed_dim=256, v_dim=256, window_size=7, num_heads=4, patch_size=4, in_chans=3)
-        # self.DiffAttentionModule0 = DiffAttentionModule(128,256)
-        # self.DiffAttentionModule1 = DiffAttentionModule(128,256)
-        # self.DiffAttentionModule2 = DiffAttentionModule(128,256)
-        # self.DiffAttentionModule3 = DiffAttentionModule(128,256)
-        # self.DiffAttentionModule4 = DiffAttentionModule(128,256)
+        # self.ff1 = FreqWaveletFusion(256, 256)
+        # self.ff2 = FreqWaveletFusion(256,512)
+        # self.ff3 = FreqWaveletFusion(256,768)
+        # self.ff4 = FreqWaveletFusion(256,1024)
         self.Dysample = DySample_UP(in_channels=256,scale=2,style='pl')
         # self.Dysample_cc1 = DySample_UP(in_channels=512,scale=8,style='pl')
         # self.Dysample_cc2 = DySample_UP(in_channels=768,scale=4,style='pl')
         # self.Dysample_cc3 = DySample_UP(in_channels=1024,scale=2,style='pl')
         self.DAFM =DAFM(256,input_size=(256,256))
         self.pooling = nn.AvgPool2d(kernel_size=2, stride=2) 
-        # self.MCA = MutualCrossAttention(0.3)
-        # self.BMCA = DifferenceFeatureExtractor(256,256)
-    #0302
-        # self.DAttention = DAttention(
-        #                 channel=256, q_size=(32,32), n_heads=8, n_groups=4, stride=1)
-    #0501
-        # self.class_token = Class_Token_Seg3(dim=self.embedding_dim, num_heads=1, num_classes=self.output_nc)
-        # self.trans = TransformerClassToken3(dim=self.embedding_dim, depth=32, num_heads=2,
-        #                                     trans_with_mlp=True, att_type='SelfAttention', norm_cfg=None,
-        #                                     act_cfg=None)
 
     def _transform_inputs(self, inputs):                                        #对输入特征进行转换
         if self.input_transform == 'resize_concat':
@@ -563,6 +427,17 @@ class SegFusion(nn.Module):
         _, x0, x1234_up = self.ff4(hr_feat=output_c0, lr_feat=cc3)
         cc4 = torch.cat([x0, x1234_up],dim=1)
 
+        # x4_up = self.ff1(hr_feat=output_c3, lr_feat=output_c4)
+        # # cc1 = torch.cat([output_c3, x4_up],dim=1)
+        # x34_up = self.ff2(hr_feat=output_c2, lr_feat= x4_up)
+        # # cc2 = torch.cat([output_c2, x34_up],dim=1)
+        # x234_up = self.ff3(hr_feat=output_c1, lr_feat=x34_up)
+        # # cc3 = torch.cat([output_c1, x234_up],dim=1) # channel=4c, 1/4 img size
+        # # cc3 = self.Conv_cc3(cc3)            #c 1024 -> 256 
+        # # cc3 = x = self.convd2x(cc3)
+        # # cc = cc3*_c0
+        # x1234_up = self.ff4(hr_feat=output_c0, lr_feat=x234_up)
+        # # cc4 = torch.cat([output_c0, x1234_up],dim=1)
     #尝试在多尺度频域特征融合后进行  通道、尺寸的对齐相加
         # cc1 = self.Dysample_cc1(cc1)
         # cc1 = self.Conv_cc1(cc1)            #c 512  -> 256 
@@ -1234,120 +1109,4 @@ class UPerHead(nn.Module):
         # finally_output = self.active(finally_output)
         out.append(finally_output)
         return out
-    
-
-# class UPerHead(BaseDecodeHead):
-#     """Unified Perceptual Parsing for Scene Understanding.
-
-#     This head is the implementation of `UPerNet
-#     <https://arxiv.org/abs/1807.10221>`_.
-
-#     Args:
-#         pool_scales (tuple[int]): Pooling scales used in Pooling Pyramid
-#             Module applied on the last feature. Default: (1, 2, 3, 6).
-#     """
-
-#     def __init__(self, pool_scales=(1, 2, 3, 6), **kwargs):
-#         super(UPerHead, self).__init__(
-#             input_transform='multiple_select', **kwargs)
-#         # PSP Module
-#         self.psp_modules = PPM(
-#             pool_scales,
-#             self.in_channels[-1],
-#             self.channels,
-#             conv_cfg=self.conv_cfg,
-#             norm_cfg=self.norm_cfg,
-#             act_cfg=self.act_cfg,
-#             align_corners=self.align_corners)
-#         self.bottleneck = ConvModule(
-#             self.in_channels[-1] + len(pool_scales) * self.channels,
-#             self.channels,
-#             3,
-#             padding=1,
-#             conv_cfg=self.conv_cfg,
-#             norm_cfg=self.norm_cfg,
-#             act_cfg=self.act_cfg)
-#         # FPN Module
-#         self.lateral_convs = nn.ModuleList()
-#         self.fpn_convs = nn.ModuleList()
-#         for in_channels in self.in_channels[:-1]:  # skip the top layer
-#             l_conv = ConvModule(
-#                 in_channels,
-#                 self.channels,
-#                 1,
-#                 conv_cfg=self.conv_cfg,
-#                 norm_cfg=self.norm_cfg,
-#                 act_cfg=self.act_cfg,
-#                 inplace=False)
-#             fpn_conv = ConvModule(
-#                 self.channels,
-#                 self.channels,
-#                 3,
-#                 padding=1,
-#                 conv_cfg=self.conv_cfg,
-#                 norm_cfg=self.norm_cfg,
-#                 act_cfg=self.act_cfg,
-#                 inplace=False)
-#             self.lateral_convs.append(l_conv)
-#             self.fpn_convs.append(fpn_conv)
-
-#         self.fpn_bottleneck = ConvModule(
-#             len(self.in_channels) * self.channels,
-#             self.channels,
-#             3,
-#             padding=1,
-#             conv_cfg=self.conv_cfg,
-#             norm_cfg=self.norm_cfg,
-#             act_cfg=self.act_cfg)
-
-#     def psp_forward(self, inputs):
-#         """Forward function of PSP module."""
-#         x = inputs[-1]
-#         psp_outs = [x]
-#         psp_outs.extend(self.psp_modules(x))
-#         psp_outs = torch.cat(psp_outs, dim=1)
-#         output = self.bottleneck(psp_outs)
-
-#         return output
-
-#     def forward(self, inputs):
-#         """Forward function."""
-
-#         inputs = self._transform_inputs(inputs)
-
-#         # build laterals
-#         laterals = [
-#             lateral_conv(inputs[i])
-#             for i, lateral_conv in enumerate(self.lateral_convs)
-#         ]
-
-#         laterals.append(self.psp_forward(inputs))
-
-#         # build top-down path
-#         used_backbone_levels = len(laterals)
-#         for i in range(used_backbone_levels - 1, 0, -1):
-#             prev_shape = laterals[i - 1].shape[2:]
-#             laterals[i - 1] += resize(
-#                 laterals[i],
-#                 size=prev_shape,
-#                 mode='bilinear',
-#                 align_corners=self.align_corners)
-
-#         # build outputs
-#         fpn_outs = [
-#             self.fpn_convs[i](laterals[i])
-#             for i in range(used_backbone_levels - 1)
-#         ]
-#         # append psp feature
-#         fpn_outs.append(laterals[-1])
-
-#         for i in range(used_backbone_levels - 1, 0, -1):
-#             fpn_outs[i] = resize(
-#                 fpn_outs[i],
-#                 size=fpn_outs[0].shape[2:],
-#                 mode='bilinear',
-#                 align_corners=self.align_corners)
-#         fpn_outs = torch.cat(fpn_outs, dim=1)
-#         output = self.fpn_bottleneck(fpn_outs)
-#         output = self.cls_seg(output)
-#         return output
+   

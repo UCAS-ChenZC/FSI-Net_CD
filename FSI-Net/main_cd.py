@@ -10,17 +10,20 @@ the main function for training the CD networks
 
 
 def train(args):
+    ###     VSCode tensor print setting     ###
     def custom_repr(self):
         return f'{{Tensor:{tuple(self.shape)}}} {original_repr(self)}'
 
     original_repr = torch.Tensor.__repr__
     torch.Tensor.__repr__ = custom_repr
+    ###     VSCode tensor print setting     ###
+    
     dataloaders = utils.get_loaders(args)
     model = CDTrainer(args=args, dataloaders=dataloaders)
     model.train_models()
 
 
-def test(args):
+def test(args): 
     def custom_repr(self):
         return f'{{Tensor:{tuple(self.shape)}}} {original_repr(self)}'
 
@@ -41,8 +44,8 @@ if __name__ == '__main__':
     # ------------
     parser = ArgumentParser()
     parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
-    parser.add_argument('--project_name', default='1031Test', type=str)
-    parser.add_argument('--checkpoint_root', default='checkpoints/20251031', type=str)
+    parser.add_argument('--project_name', default='127_SFIB117_FreRMT_FreWave-t', type=str)       #116Test_Dy_sfb_TIPDA_RMT-t   tiaoshi    124_New_RMT-t
+    parser.add_argument('--checkpoint_root', default='checkpoints/20260112', type=str)
     parser.add_argument('--vis_root', default='vis', type=str)
 
     # data
@@ -50,9 +53,9 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', default='CDDataset', type=str)
     parser.add_argument('--data_name', default='LEVIR', type=str)   #   CDD  LEVIR
 
-    parser.add_argument('--batch_size', default=8, type=int)
-    parser.add_argument('--split', default="train", type=str)
-    parser.add_argument('--split_val', default="val", type=str)
+    parser.add_argument('--batch_size', default=1, type=int)
+    parser.add_argument('--split', default="trainval", type=str)
+    parser.add_argument('--split_val', default="test", type=str)
 
     parser.add_argument('--img_size', default=256, type=int)
     parser.add_argument('--shuffle_AB', default=False, type=str)
@@ -63,7 +66,7 @@ if __name__ == '__main__':
     # parser.add_argument('--pretrain', default='/home/solid/CD/code/open-cd-main/fpn_dat_t_80k.pth', type=str)
     # parser.add_argument('--pretrain', default= 'pretrain/dat_pp_tiny_in1k_224.pth', type=str)              #   for UNet
     # parser.add_argument('--pretrain', default=None, type=str)   
-    parser.add_argument('--pretrain', default='/home/solid/CD/code/pretrain/swin_tiny_patch4_window7_224.pth', type=str)
+    parser.add_argument('--pretrain', default='pretrain/RMT-T.pth', type=str)   #pretrain/RMT-S-label.pth  pretrain/RMT-T.pth
     parser.add_argument('--multi_scale_train', default=True, type=str)
     parser.add_argument('--multi_scale_infer', default=False, type=str)
     parser.add_argument('--multi_pred_weights', nargs = '+', type = float, default = [1.0, 1.0, 0.3, 0.3, 2.0])     #多尺度训练时损失函数的加权比例 [0.5, 0.5, 0.5, 0.8, 1.0] [1.0, 1.0, 0.3, 0.3, 2.0]
@@ -78,7 +81,7 @@ if __name__ == '__main__':
 
     # optimizer
     parser.add_argument('--optimizer', default='adamw', type=str)
-    parser.add_argument('--lr', default=0.0002, type=float)
+    parser.add_argument('--lr', default=0.0001, type=float)
     parser.add_argument('--max_epochs', default=200, type=int)
     parser.add_argument('--lr_policy', default='linear', type=str,
                         help='linear | step')                                   #STEP??

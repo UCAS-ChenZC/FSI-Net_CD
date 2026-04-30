@@ -9,11 +9,10 @@ from einops import rearrange
 
 import models
 from models.help_funcs import Transformer, TransformerDecoder, TwoLayerConv2d
-from models.ChangeFormer import FSI_Former
+from models.FSI_Net import FSI_Former
 from models.SiamUnet_diff import SiamUnet_diff
 from models.SiamUnet_conc import SiamUnet_conc
 from models.Unet import Unet
-from models.DTCDSCN import CDNet34
 
 
 ###############################################################################
@@ -171,11 +170,6 @@ def define_G(args, init_type='normal', init_gain=0.02, gpu_ids=[]):
         #Implementation of ``Fully convolutional siamese networks for change detection''
         #Code copied from: https://github.com/rcdaudt/fully_convolutional_change_detection
         net = Unet(input_nbr=3, label_nbr=2)
-    
-    elif args.net_G == "DTCDSCN":
-        #The implementation of the paper"Building Change Detection for Remote Sensing Images Using a Dual Task Constrained Deep Siamese Convolutional Network Model "
-        #Code copied from: https://github.com/fitzpchao/DTCDSCN
-        net = CDNet34(in_channels=3)
 
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % args.net_G)
