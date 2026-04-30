@@ -30,7 +30,7 @@ opencv-python 4.10.0.84
 Create a virtual ``conda`` environment named ``py212cu118`` with the following command:
 
 ```bash
-conda create --name py212cu118 --file requirements.txt
+conda create --name pt212cu118 --file requirements.txt
 conda activate pt212cu118
 ```
 
@@ -43,45 +43,8 @@ git clone https://github.com/UCAS-ChenZC/FSI-Net.git
 cd FSI-Net
 ```
 
-## Quick Start on LEVIR dataset
-
-We have some samples from the [LEVIR-CD](https://justchenhao.github.io/LEVIR/) dataset in the folder `samples_LEVIR` for a quick start.
-
-Firstly, you can download our ChangeFormerV6 pretrained model——by [`Github-LEVIR-Pretrained`](https://github.com/wgcban/ChangeFormer/releases/download/v0.1.0/CD_ChangeFormerV6_LEVIR_b16_lr0.0001_adamw_train_test_200_linear_ce_multi_train_True_multi_infer_False_shuffle_AB_False_embed_dim_256.zip). 
-
-Place it in `checkpoints/ChangeFormer_LEVIR/`.
-
-Run a demo to get started as follows:
-
-```python
-python demo_LEVIR.py
-```
-
-You can find the prediction results in `samples/predict_LEVIR`.
-
-
-## Quick Start on DSIFN dataset
-
-We have some samples from the [`DSIFN-CD`](https://github.com/GeoZcx/A-deeply-supervised-image-fusion-network-for-change-detection-in-remote-sensing-images/tree/master/dataset) dataset in the folder `samples_DSIFN` for a quick start.
-
-Download our ChangeFormerV6 pretrained model——by [`Github`](https://github.com/wgcban/ChangeFormer/releases/download/v0.1.0/CD_ChangeFormerV6_DSIFN_b16_lr0.00006_adamw_train_test_200_linear_ce_multi_train_True_multi_infer_False_shuffle_AB_False_embed_dim_256.zip). After downloaded the pretrained model, you can put it in `checkpoints/ChangeFormer_DSIFN/`.
-
-Run the demo to get started as follows:
-
-```python
-python demo_DSIFN.py
-```
-
-You can find the prediction results in `samples/predict_DSIFN`.
-
 ## Training on LEVIR-CD
-
-When we initialy train our ChangeFormer, we initialized some parameters of the network with a model pre-trained on the RGB segmentation (ADE 160k dataset) to get faster convergence.
-
-You can download the pre-trained model [`Github-LEVIR-Pretrained`](https://github.com/wgcban/ChangeFormer/releases/download/v0.1.0/CD_ChangeFormerV6_LEVIR_b16_lr0.0001_adamw_train_test_200_linear_ce_multi_train_True_multi_infer_False_shuffle_AB_False_embed_dim_256.zip).
-```
-wget https://www.dropbox.com/s/undtrlxiz7bkag5/pretrained_changeformer.pt
-```
+You can download the pre-trained model [`Github-Pretrained`](https://pan.baidu.com/s/1uTSCuPqYRNmT4Zb4Je9BOw?pwd=vsyv).
 
 #Then, update the path to the pre-trained model by updating the ``path`` argument in the ``run_ChangeFormer_LEVIR.sh``.
 #Here:
