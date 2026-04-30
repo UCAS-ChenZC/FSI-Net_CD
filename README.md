@@ -6,6 +6,7 @@
 ![image-20210228153142126](./FSI-Net/images/framework.png)
 
 ## Quantitative & Qualitative Results on LEVIR-CD, DSIFN-CD, WHU-CD and CDD 
+![image-20210228153142126](./FSI-Net/images/LEVIR&DSIFN&WHU&CDD.png)
 ![image-20210228153142126](./FSI-Net/images/table_LEVIR&DSIFN&WHU&CDD.png)
 
 # Usage
