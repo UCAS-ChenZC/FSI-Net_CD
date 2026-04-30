@@ -3,11 +3,11 @@
 
 
 ## Network Architecture
-![image-20210228153142126](./FSI-Net/images/FSI-Net.png)
+![image-20210228153142126](./FSI-Net/images/framework.png)
 
 ## Quantitative & Qualitative Results on LEVIR-CD, DSIFN-CD, WHU-CD and CDD 
-![image-20210228153142126](./FSI-Net/images/LEVIR-CD&DSIFN-CD.png)
-![image-20210228153142126](./FSI-Net/images/WHU-CD&CDD.png)
+![image-20210228153142126](./FSI-Net/images/table_LEVIR&DSIFN&WHU&CDD.png)
+#![image-20210228153142126](./FSI-Net/images/WHU-CD&CDD.png)
 
 # Usage
 ## Requirements
