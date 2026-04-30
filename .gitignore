@@ -1,0 +1,7 @@
+
+# model checkpoints
+*.pt
+*.pth
+*.ckpt
+checkpoints/
+FSI-Net/checkpoints/
