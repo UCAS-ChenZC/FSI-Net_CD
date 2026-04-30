@@ -32,7 +32,7 @@ Create a virtual ``conda`` environment named ``py212cu118`` with the following c
 
 ```bash
 conda create --name py212cu118 --file requirements.txt
-conda activate py212cu118
+conda activate pt212cu118
 ```
 
 ## Installation
